@@ -21,16 +21,20 @@
 // limitations under the License.
 
 #define __BT_KEYBOARD__ 1
-#include "..\include\bt_keyboard.hpp"
+#include "../include/bt_keyboard.hpp"
 
 #include <cstring>
 #include <algorithm>
 #include <iterator>
 
 #define SCAN 1
+#define SCAN_DEVICE_DUMP 0
 
-// uncomment to print all devices that were seen during a scan
+#if SCAN_DEVICE_DUMP
 #define GAP_DBG_PRINTF(...) printf(__VA_ARGS__)
+#else
+#define GAP_DBG_PRINTF(...) ((void)0)
+#endif
 
 #define SIZEOF_ARRAY(a) (sizeof(a) / sizeof(*a))
 
@@ -1043,6 +1047,7 @@ bool BTKeyboard::devices_scan(int seconds_wait_time)
     esp_hid_scan_result_t *cr = NULL;
     while (r)
     {
+#if SCAN_DEVICE_DUMP
       printf("  %s: " ESP_BD_ADDR_STR ", ", (r->transport == ESP_HID_TRANSPORT_BLE) ? "BLE" : "BT ", ESP_BD_ADDR_HEX(r->bda));
       printf("RSSI: %d, ", r->rssi);
       printf("USAGE: %s, ", esp_hid_usage_str(r->usage));
@@ -1064,6 +1069,7 @@ bool BTKeyboard::devices_scan(int seconds_wait_time)
       }
       printf("NAME: %s ", r->name ? r->name : "");
       printf("\n");
+#endif
       r = r->next;
     }
     if (cr)
