@@ -16,6 +16,7 @@ Never stop dreaming.
 #include <cmath>
 #include "../include/bt_keyboard.hpp" // Interface with a BT/BLE peripheral device (Keyboard & Mouse)
 #include "../include/esp32-ps2dev.h"  // Emulate a PS/2 device
+#include "../include/amiga-db9-mouse.hpp"
 
 #define BT2PS2_MOUSE_DEBUG 0
 
@@ -25,8 +26,14 @@ Never stop dreaming.
 const int KB_CLK_PIN = 22; // VERY IMPORTANT: Not all pins are suitable out-of-the-box. Check README for more info!
 const int KB_DATA_PIN = 23;
 
-const int MOUSE_CLK_PIN = 26; // VERY IMPORTANT: Not all pins are suitable out-of-the-box. Check README for more info!
-const int MOUSE_DATA_PIN = 25;
+// Amiga DB9 quadrature output pins
+const int MOUSE_XA_PIN = 25;
+const int MOUSE_XB_PIN = 26;
+const int MOUSE_YA_PIN = 27;
+const int MOUSE_YB_PIN = 14;
+const int MOUSE_LEFT_BTN_PIN = 33;
+const int MOUSE_RIGHT_BTN_PIN = 32;
+const int MOUSE_MIDDLE_BTN_PIN = 13;
 
 const bool pairing_at_startup = true; // set to 'true' if you want BT & BLE pairing at startup (slower startup)
 // otherwise, pairing must be requested by pressing BOOT button (or set GPIO 0 to ground) during execution
@@ -42,7 +49,15 @@ void mouse_task(void *arg);
 void ble_connection_daemon(void *arg);
 TaskHandle_t pairing_task_handle;
 
-esp32_ps2dev::PS2Mouse mouse(MOUSE_CLK_PIN, MOUSE_DATA_PIN);
+AmigaDB9Mouse mouse({
+    static_cast<gpio_num_t>(MOUSE_XA_PIN),
+    static_cast<gpio_num_t>(MOUSE_XB_PIN),
+    static_cast<gpio_num_t>(MOUSE_YA_PIN),
+    static_cast<gpio_num_t>(MOUSE_YB_PIN),
+    static_cast<gpio_num_t>(MOUSE_LEFT_BTN_PIN),
+    static_cast<gpio_num_t>(MOUSE_RIGHT_BTN_PIN),
+    static_cast<gpio_num_t>(MOUSE_MIDDLE_BTN_PIN),
+});
 
 esp32_ps2dev::PS2Keyboard keyboard(KB_CLK_PIN, KB_DATA_PIN);
 
@@ -182,15 +197,6 @@ extern "C"
         io_conf.pin_bit_mask = (1ULL << KB_CLK_PIN);
         gpio_config(&io_conf);
 
-        io_conf.intr_type = GPIO_INTR_DISABLE;
-        io_conf.mode = GPIO_MODE_OUTPUT_OD;
-        io_conf.pin_bit_mask = (1ULL << MOUSE_DATA_PIN);
-        io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-        io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
-        gpio_config(&io_conf);
-        io_conf.pin_bit_mask = (1ULL << MOUSE_CLK_PIN);
-        gpio_config(&io_conf);
-
         io_conf.intr_type = GPIO_INTR_DISABLE; // PAIRING BUTTON CONFIGURATION (GPIO 0 OR "BOOT BUTTON")
         io_conf.mode = GPIO_MODE_INPUT;
         io_conf.pin_bit_mask = (1ULL << GPIO_NUM_0);
@@ -204,7 +210,7 @@ extern "C"
         gpio_set_direction(GPIO_NUM_2, GPIO_MODE_OUTPUT); // Set the GPIO as a push/pull output
         gpio_set_level(GPIO_NUM_2, 1);
 
-        mouse.begin(false); // deterministic startup: always initialize PS/2 mouse state on boot
+        mouse.begin();
         keyboard.begin();
 
         gpio_set_level(GPIO_NUM_2, 0);
@@ -597,63 +603,14 @@ void mouse_task(void *arg)
             mouseEvents++;
             if (BT2PS2_MOUSE_DEBUG && ((mouseEvents % 25) == 0))
             {
-                ESP_LOGI(TAG, "MOUSE EVT #%lu route=ps2 B=%u X=%d Y=%d W=%d",
+                ESP_LOGI(TAG, "MOUSE EVT #%lu route=amiga-db9 B=%u X=%d Y=%d W=%d",
                          (unsigned long)mouseEvents, infoMouse.mouse_buttons, infoMouse.mouse_x, infoMouse.mouse_y, infoMouse.mouse_w);
             }
 
             mouse.move(infoMouse.mouse_x, infoMouse.mouse_y, infoMouse.mouse_w);
-
-            // KEY SECTION (always tested)
-            if ((infoMouse.mouse_buttons) != (infoMouseBuf.mouse_buttons))
-            {
-                if ((infoMouse.mouse_buttons & 0b1) != (infoMouseBuf.mouse_buttons & 0b1)) // change on first button?
-                {
-                    if (infoMouse.mouse_buttons & 0b1)
-                    {
-                        ESP_LOGD(TAG, "Down Mouse button 1");
-                        mouse.press(esp32_ps2dev::PS2Mouse::Button::LEFT);
-                        gpio_set_level(GPIO_NUM_2, 0);
-                    }
-                    else
-                    {
-                        ESP_LOGD(TAG, "Up Mouse button 1");
-                        mouse.release(esp32_ps2dev::PS2Mouse::Button::LEFT);
-                        gpio_set_level(GPIO_NUM_2, 1);
-                    }
-                }
-
-                if ((infoMouse.mouse_buttons & 0b10) != (infoMouseBuf.mouse_buttons & 0b10)) // change on second button?
-                {
-                    if (infoMouse.mouse_buttons & 0b10)
-                    {
-                        ESP_LOGD(TAG, "Down Mouse button 2");
-                        mouse.press(esp32_ps2dev::PS2Mouse::Button::RIGHT);
-                        gpio_set_level(GPIO_NUM_2, 0);
-                    }
-                    else
-                    {
-                        ESP_LOGD(TAG, "Up Mouse button 2");
-                        mouse.release(esp32_ps2dev::PS2Mouse::Button::RIGHT);
-                        gpio_set_level(GPIO_NUM_2, 1);
-                    }
-                }
-
-                if ((infoMouse.mouse_buttons & 0b100) != (infoMouseBuf.mouse_buttons & 0b100)) // change on third button?
-                {
-                    if (infoMouse.mouse_buttons & 0b100)
-                    {
-                        ESP_LOGD(TAG, "Down Mouse button 3");
-                        mouse.press(esp32_ps2dev::PS2Mouse::Button::MIDDLE);
-                        gpio_set_level(GPIO_NUM_2, 0);
-                    }
-                    else
-                    {
-                        ESP_LOGD(TAG, "Up Mouse button 3");
-                        mouse.release(esp32_ps2dev::PS2Mouse::Button::MIDDLE);
-                        gpio_set_level(GPIO_NUM_2, 1);
-                    }
-                }
-            }
+            mouse.set_buttons(infoMouse.mouse_buttons & 0b111);
+            if ((infoMouse.mouse_buttons & 0b111) != (infoMouseBuf.mouse_buttons & 0b111))
+                gpio_set_level(GPIO_NUM_2, (infoMouse.mouse_buttons & 0b111) ? 0 : 1);
             infoMouseBuf = infoMouse; // Now all the keys are handled, we save the state
         }
     }
