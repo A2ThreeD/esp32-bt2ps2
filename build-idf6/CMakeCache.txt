@@ -366,7 +366,7 @@ Mbed TLS_IS_TOP_LEVEL:STATIC=OFF
 Mbed TLS_SOURCE_DIR:STATIC=/Users/morrisaaron/.espressif/v6.0/esp-idf/components/mbedtls/mbedtls
 
 //No help, variable specified on the command line.
-PYTHON:UNINITIALIZED=/Users/morrisaaron/.espressif/tools/python/v6.0/venv/bin/python
+PYTHON:UNINITIALIZED=/Users/morrisaaron/.espressif/tools/python/v6.0/venv/bin/python3
 
 //No help, variable specified on the command line.
 PYTHON_DEPS_CHECKED:UNINITIALIZED=1
@@ -641,7 +641,7 @@ C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS:INTERNAL=1
 //Details about finding Git
 FIND_PACKAGE_MESSAGE_DETAILS_Git:INTERNAL=[/opt/homebrew/bin/git][v2.47.0()]
 //Details about finding Python3
-FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[/Users/morrisaaron/.espressif/tools/python/v6.0/venv/bin/python][found components: Interpreter ][v3.14.4()]
+FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[/Users/morrisaaron/.espressif/tools/python/v6.0/venv/bin/python3][found components: Interpreter ][v3.14.4()]
 //Details about finding Threads
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 //ADVANCED property for variable: GIT_EXECUTABLE
@@ -652,10 +652,10 @@ _GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=/usr/local
 _Python3_Compiler_REASON_FAILURE:INTERNAL=
 //Development reason failure
 _Python3_Development_REASON_FAILURE:INTERNAL=
-_Python3_EXECUTABLE:INTERNAL=/Users/morrisaaron/.espressif/tools/python/v6.0/venv/bin/python
+_Python3_EXECUTABLE:INTERNAL=/Users/morrisaaron/.espressif/tools/python/v6.0/venv/bin/python3
 //Python3 Properties
 _Python3_INTERPRETER_PROPERTIES:INTERNAL=Python;3;14;4;32;64;;;abi3;/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14;/Users/morrisaaron/.espressif/tools/python/v6.0/venv/lib/python3.14;/Users/morrisaaron/.espressif/tools/python/v6.0/venv/lib/python3.14/site-packages;/Users/morrisaaron/.espressif/tools/python/v6.0/venv/lib/python3.14/site-packages
-_Python3_INTERPRETER_SIGNATURE:INTERNAL=3f6b81782db30d6ccf7c26b418fbe1b2
+_Python3_INTERPRETER_SIGNATURE:INTERNAL=c2bf79a4e699c867a665daf56ad6764d
 //NumPy reason failure
 _Python3_NumPy_REASON_FAILURE:INTERNAL=
 

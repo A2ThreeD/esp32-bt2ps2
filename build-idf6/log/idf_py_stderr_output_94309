@@ -20,14 +20,14 @@ Configuration Report
     * PARTITION_TABLE_CUSTOM_FILENAME (defined at                               
     /Users/morrisaaron/.espressif/v6.0/esp-idf/components/partition_table/K…    
     with user-set value partitions.csv from                                     
-    /var/folders/wl/h8lpxq9d5573k6xp_g2f2fyc0000gn/T/kconfgen_tmpouj__qae       
+    /var/folders/wl/h8lpxq9d5573k6xp_g2f2fyc0000gn/T/kconfgen_tmpwfg8p0ip       
     * PARTITION_TABLE_FILENAME (defined at                                      
     /Users/morrisaaron/.espressif/v6.0/esp-idf/components/partition_table/K…    
     with user-set value partitions_singleapp_large.csv from                     
-    /var/folders/wl/h8lpxq9d5573k6xp_g2f2fyc0000gn/T/kconfgen_tmpbe1k3yi3       
+    /var/folders/wl/h8lpxq9d5573k6xp_g2f2fyc0000gn/T/kconfgen_tmpyuuk9pt9       
     * ESP_CONSOLE_UART_BAUDRATE (defined at                                     
     /Users/morrisaaron/.espressif/v6.0/esp-idf/components/esp_stdio/Kconfig…    
     with user-set value 115200 from                                             
-    /var/folders/wl/h8lpxq9d5573k6xp_g2f2fyc0000gn/T/kconfgen_tmpouj__qae       
+    /var/folders/wl/h8lpxq9d5573k6xp_g2f2fyc0000gn/T/kconfgen_tmpwfg8p0ip       
    ──────────────────────────────────────────────────────────────────────────   
  ────────────────────────────────────────────────────────────────────────────── 

@@ -16,7 +16,8 @@ Never stop dreaming.
 #include <cmath>
 #include "../include/bt_keyboard.hpp" // Interface with a BT/BLE peripheral device (Keyboard & Mouse)
 #include "../include/esp32-ps2dev.h"  // Emulate a PS/2 device
-#include "../include/serial_mouse.h"  // Emulate a serial mouse
+
+#define BT2PS2_MOUSE_DEBUG 0
 
 /////////////////////////////// USER ADJUSTABLE VARIABLES //////////////////////////////////////////////////
 
@@ -26,9 +27,6 @@ const int KB_DATA_PIN = 23;
 
 const int MOUSE_CLK_PIN = 26; // VERY IMPORTANT: Not all pins are suitable out-of-the-box. Check README for more info!
 const int MOUSE_DATA_PIN = 25;
-
-static const int SERIAL_MOUSE_RS232_RTS = 15; // If you're not using serial, do not connect anything to this pin, otherwise PS/2 may not work if pulled down
-static const int SERIAL_MOUSE_RS232_RX = 4;
 
 const bool pairing_at_startup = true; // set to 'true' if you want BT & BLE pairing at startup (slower startup)
 // otherwise, pairing must be requested by pressing BOOT button (or set GPIO 0 to ground) during execution
@@ -47,8 +45,6 @@ TaskHandle_t pairing_task_handle;
 esp32_ps2dev::PS2Mouse mouse(MOUSE_CLK_PIN, MOUSE_DATA_PIN);
 
 esp32_ps2dev::PS2Keyboard keyboard(KB_CLK_PIN, KB_DATA_PIN);
-
-serialMouse mouse_serial;
 
 // BTKeyboard section
 BTKeyboard bt_keyboard;
@@ -202,29 +198,14 @@ extern "C"
         io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
         gpio_config(&io_conf);
 
-        io_conf.intr_type = GPIO_INTR_NEGEDGE; // interrupt for serial mouse
-        io_conf.mode = GPIO_MODE_INPUT;
-        io_conf.pin_bit_mask = (1ULL << SERIAL_MOUSE_RS232_RTS);
-        io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-        io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
-        gpio_config(&io_conf);
-
-        io_conf.intr_type = GPIO_INTR_DISABLE;
-        io_conf.mode = GPIO_MODE_OUTPUT;
-        io_conf.pin_bit_mask = (1ULL << SERIAL_MOUSE_RS232_RX);
-        io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-        io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
-        gpio_config(&io_conf);
-
         // init PS/2 emulation first
 
         gpio_reset_pin(GPIO_NUM_2);                       // using built-in LED for notifications
         gpio_set_direction(GPIO_NUM_2, GPIO_MODE_OUTPUT); // Set the GPIO as a push/pull output
         gpio_set_level(GPIO_NUM_2, 1);
 
-        mouse.begin(true); // true parameter indicates we want to recover previous mouse state from NVS
+        mouse.begin(false); // deterministic startup: always initialize PS/2 mouse state on boot
         keyboard.begin();
-        mouse_serial.setup(SERIAL_MOUSE_RS232_RTS, SERIAL_MOUSE_RS232_RX);
 
         gpio_set_level(GPIO_NUM_2, 0);
 
@@ -243,7 +224,8 @@ extern "C"
         }
         ESP_ERROR_CHECK(ret);
 
-        if (bt_keyboard.setup(pairing_handler)) // Must be called once
+        const bool btSetupOk = bt_keyboard.setup(pairing_handler); // Must be called once
+        if (btSetupOk)
         {
             if (pairing_at_startup)
             {
@@ -256,9 +238,12 @@ extern "C"
         }
         else
         {
-            ESP_LOGE(TAG, "bt_keyboard.setup() returned false. System initialization ABORTED! Post above log error messages in forum to get help. Restarting...");
-            vTaskDelay(5000 / portTICK_PERIOD_MS);
-            esp_restart(); // fun aborted
+            ESP_LOGE(TAG, "bt_keyboard.setup() returned false. Keeping PS/2 initialized and running without BT input.");
+            gpio_set_level(GPIO_NUM_2, 1);
+            while (true)
+            {
+                vTaskDelay(1000 / portTICK_PERIOD_MS);
+            }
         }
 
         // time variables, don't adjust unless you know what you're doing
@@ -288,7 +273,7 @@ extern "C"
             infoCCONTROL.keys[j] = 0;
         }
 
-        xTaskCreatePinnedToCore(mouse_task, "mouse_task", 4096, NULL, 9, &mouse_task_handle, 0); // this lives in core 0 so not to run alongside serial mouse daemon (and getting paused by it)
+        xTaskCreatePinnedToCore(mouse_task, "mouse_task", 4096, NULL, 9, &mouse_task_handle, 0);
         xTaskCreatePinnedToCore(ble_connection_daemon, "ble_task", 4096, NULL, 0, &ble_connection_daemon_handle, 0);
 
         while (true)
@@ -603,72 +588,72 @@ void mouse_task(void *arg)
 {
     BTKeyboard::Mouse_Control infoMouse;    // freshly received mouse report
     BTKeyboard::Mouse_Control infoMouseBuf; // currently pressed mouse report
+    uint32_t mouseEvents = 0;
 
     while (true)
     {
         if (bt_keyboard.wait_for_low_event_MOUSE(infoMouse)) // return immediately if queue empty
         {
-            if (!gpio_get_level((gpio_num_t)SERIAL_MOUSE_RS232_RTS)) // serial connection auto detection, RTS should be high during serial presence 
+            mouseEvents++;
+            if (BT2PS2_MOUSE_DEBUG && ((mouseEvents % 25) == 0))
             {
-                mouse_serial.serialMove(infoMouse.mouse_buttons, infoMouse.mouse_x, -infoMouse.mouse_y);
+                ESP_LOGI(TAG, "MOUSE EVT #%lu route=ps2 B=%u X=%d Y=%d W=%d",
+                         (unsigned long)mouseEvents, infoMouse.mouse_buttons, infoMouse.mouse_x, infoMouse.mouse_y, infoMouse.mouse_w);
             }
-            else
+
+            mouse.move(infoMouse.mouse_x, infoMouse.mouse_y, infoMouse.mouse_w);
+
+            // KEY SECTION (always tested)
+            if ((infoMouse.mouse_buttons) != (infoMouseBuf.mouse_buttons))
             {
-                mouse.move(infoMouse.mouse_x, infoMouse.mouse_y, infoMouse.mouse_w);
-
-                // KEY SECTION (always tested)
-                if ((infoMouse.mouse_buttons) != (infoMouseBuf.mouse_buttons))
+                if ((infoMouse.mouse_buttons & 0b1) != (infoMouseBuf.mouse_buttons & 0b1)) // change on first button?
                 {
-                    if ((infoMouse.mouse_buttons & 0b1) != (infoMouseBuf.mouse_buttons & 0b1)) // change on first button?
+                    if (infoMouse.mouse_buttons & 0b1)
                     {
-                        if (infoMouse.mouse_buttons & 0b1)
-                        {
-                            ESP_LOGD(TAG, "Down Mouse button 1");
-                            mouse.press(esp32_ps2dev::PS2Mouse::Button::LEFT);
-                            gpio_set_level(GPIO_NUM_2, 0);
-                        }
-                        else
-                        {
-                            ESP_LOGD(TAG, "Up Mouse button 1");
-                            mouse.release(esp32_ps2dev::PS2Mouse::Button::LEFT);
-                            gpio_set_level(GPIO_NUM_2, 1);
-                        }
+                        ESP_LOGD(TAG, "Down Mouse button 1");
+                        mouse.press(esp32_ps2dev::PS2Mouse::Button::LEFT);
+                        gpio_set_level(GPIO_NUM_2, 0);
                     }
-
-                    if ((infoMouse.mouse_buttons & 0b10) != (infoMouseBuf.mouse_buttons & 0b10)) // change on second button?
+                    else
                     {
-                        if (infoMouse.mouse_buttons & 0b10)
-                        {
-                            ESP_LOGD(TAG, "Down Mouse button 2");
-                            mouse.press(esp32_ps2dev::PS2Mouse::Button::RIGHT);
-                            gpio_set_level(GPIO_NUM_2, 0);
-                        }
-                        else
-                        {
-                            ESP_LOGD(TAG, "Up Mouse button 2");
-                            mouse.release(esp32_ps2dev::PS2Mouse::Button::RIGHT);
-                            gpio_set_level(GPIO_NUM_2, 1);
-                        }
+                        ESP_LOGD(TAG, "Up Mouse button 1");
+                        mouse.release(esp32_ps2dev::PS2Mouse::Button::LEFT);
+                        gpio_set_level(GPIO_NUM_2, 1);
                     }
+                }
 
-                    if ((infoMouse.mouse_buttons & 0b100) != (infoMouseBuf.mouse_buttons & 0b100)) // change on third button?
+                if ((infoMouse.mouse_buttons & 0b10) != (infoMouseBuf.mouse_buttons & 0b10)) // change on second button?
+                {
+                    if (infoMouse.mouse_buttons & 0b10)
                     {
-                        if (infoMouse.mouse_buttons & 0b100)
-                        {
-                            ESP_LOGD(TAG, "Down Mouse button 3");
-                            mouse.press(esp32_ps2dev::PS2Mouse::Button::MIDDLE);
-                            gpio_set_level(GPIO_NUM_2, 0);
-                        }
-                        else
-                        {
-                            ESP_LOGD(TAG, "Up Mouse button 3");
-                            mouse.release(esp32_ps2dev::PS2Mouse::Button::MIDDLE);
-                            gpio_set_level(GPIO_NUM_2, 1);
-                        }
+                        ESP_LOGD(TAG, "Down Mouse button 2");
+                        mouse.press(esp32_ps2dev::PS2Mouse::Button::RIGHT);
+                        gpio_set_level(GPIO_NUM_2, 0);
+                    }
+                    else
+                    {
+                        ESP_LOGD(TAG, "Up Mouse button 2");
+                        mouse.release(esp32_ps2dev::PS2Mouse::Button::RIGHT);
+                        gpio_set_level(GPIO_NUM_2, 1);
+                    }
+                }
+
+                if ((infoMouse.mouse_buttons & 0b100) != (infoMouseBuf.mouse_buttons & 0b100)) // change on third button?
+                {
+                    if (infoMouse.mouse_buttons & 0b100)
+                    {
+                        ESP_LOGD(TAG, "Down Mouse button 3");
+                        mouse.press(esp32_ps2dev::PS2Mouse::Button::MIDDLE);
+                        gpio_set_level(GPIO_NUM_2, 0);
+                    }
+                    else
+                    {
+                        ESP_LOGD(TAG, "Up Mouse button 3");
+                        mouse.release(esp32_ps2dev::PS2Mouse::Button::MIDDLE);
+                        gpio_set_level(GPIO_NUM_2, 1);
                     }
                 }
             }
-
             infoMouseBuf = infoMouse; // Now all the keys are handled, we save the state
         }
     }

@@ -25,9 +25,8 @@ Working under latest ESP-IDF v5.3.0 (not v5.3.3 or higher), compiled on Visual S
 
 **Developed and tested on the ESP32 DevKit rev 1 board, other variants may not work!**
 
-WARNING: This project is for use in a plain ESP-32 module with BLE and BT Classic support and dual core processor. If you have another variant like C3, you'll have to adapt the code.
+WARNING: This project is for use in a plain ESP32 module with BLE and BT Classic support and dual-core processor. Other variants may require code changes.
 
-* ESP32 S3/C3 (BLE only boards): Check https://github.com/Hamberthm/esp32-bt2ps2/issues/3
 * USB-HID instead of PS/2: Check https://github.com/Hamberthm/esp32-bt2ps2/issues/4
 
 # Electrical connections

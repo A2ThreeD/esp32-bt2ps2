@@ -1,0 +1,268 @@
+Command: /Users/morrisaaron/.espressif/tools/python/v6.0/venv/bin/python3 /Users/morrisaaron/.espressif/v6.0/esp-idf/tools/idf_monitor.py -p /dev/cu.usbserial-0001 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 /Volumes/External/GitHub/A2ThreeD/esp32-bt2ps2/build-idf6/esp32-bt2ps2.elf /Volumes/External/GitHub/A2ThreeD/esp32-bt2ps2/build-idf6/bootloader/bootloader.elf -m '/Users/morrisaaron/.espressif/tools/python/v6.0/venv/bin/python3' '/Users/morrisaaron/.espressif/v6.0/esp-idf/tools/idf.py' '-B' 'build-idf6' '-p' '/dev/cu.usbserial-0001'
+ets Jun  8 2016 00:22:57
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0040,len:6272
+load:0x40078000,len:15848
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (27) boot: ESP-IDF v6.0 2nd stage bootloader[0m
+[0;32mI (27) boot: compile time Apr 23 2026 00:20:46[0m
+[0;32mI (27) boot: Multicore bootloader[0m
+[0;32mI (28) boot: chip revision: v1.0[0m
+[0;32mI (31) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (34) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (38) boot.esp32: SPI Flash Size : 2MB[0m
+[0;32mI (41) boot: Enabling RNG early entropy source...[0m
+[0;32mI (46) boot: Partition Table:[0m
+[0;32mI (48) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (55) boot:  0 nvs              WiFi data        01 02 0000a000 00006000[0m
+[0;32mI (61) boot:  1 phy_init         RF data          01 01 00010000 00001000[0m
+[0;32mI (68) boot:  2 factory          factory app      00 00 00020000 00177000[0m
+[0;32mI (74) boot: End of partition table[0m
+[0;32mI (78) esp_image: segment 0: paddr=00020020 vaddr=3f400020 size=416e8h (268008) map[0m
+[0;32mI (181) esp_image: segment 1: paddr=00061710 vaddr=3ffbdb60 size=050fch ( 20732) load[0m
+[0;32mI (189) esp_image: segment 2: paddr=00066814 vaddr=40080000 size=09804h ( 38916) load[0m
+[0;32mI (205) esp_image: segment 3: paddr=00070020 vaddr=400d0020 size=c9b04h (826116) map[0m
+[0;32mI (500) esp_image: segment 4: paddr=00139b2c vaddr=40089804 size=0ee64h ( 61028) load[0m
+[0;32mI (525) esp_image: segment 5: paddr=00148998 vaddr=50000000 size=00028h (    40) load[0m
+[0;32mI (537) boot: Loaded app from partition at offset 0x20000[0m
+[0;32mI (537) boot: Disabling RNG early entropy source...[0m
+[0;32mI (548) cpu_start: Multicore app[0m
+D (548) cpu_start: Pro cpu up[0m
+D (548) cpu_start: Starting app cpu, entry point is 0x4008161c[0m
+D (0) cpu_start: App cpu up[0m
+D (558) clk: RTC_SLOW_CLK calibration value: 3523392[0m
+[0;32mI (570) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+D (571) cpu_start: calling init function: 0x400d3708 on core: 0[0m
+D (574) cpu_start: calling init function: 0x400d423c on core: 0[0m
+[0;32mI (580) cpu_start: Pro cpu start user code[0m
+[0;32mI (584) cpu_start: cpu freq: 160000000 Hz[0m
+D (589) cpu_start: calling init function: 0x400d3648 on core: 0[0m
+[0;32mI (595) app_init: Application information:[0m
+[0;32mI (600) app_init: Project name:     esp32-bt2ps2[0m
+[0;32mI (605) app_init: App version:      v0.7-beta-7-g1270857-dirty[0m
+[0;32mI (612) app_init: Compile time:     Apr 23 2026 00:20:39[0m
+[0;32mI (618) app_init: ELF file SHA256:  3168b4a75...[0m
+[0;32mI (623) app_init: ESP-IDF:          v6.0[0m
+D (628) cpu_start: calling init function: 0x400d371c on core: 0[0m
+[0;32mI (634) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (638) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (643) efuse_init: Chip rev:         v1.0[0m
+D (648) cpu_start: calling init function: 0x400d57a4 on core: 0[0m
+D (654) memory_layout: Checking 13 reserved memory ranges:[0m
+D (660) memory_layout: Reserved memory range 0x3ff82000 - 0x3ff82000[0m
+D (666) memory_layout: Reserved memory range 0x3ffae000 - 0x3ffae6e0[0m
+D (672) memory_layout: Reserved memory range 0x3ffae6e0 - 0x3ffaff10[0m
+D (679) memory_layout: Reserved memory range 0x3ffb0000 - 0x3ffb6388[0m
+D (685) memory_layout: Reserved memory range 0x3ffb8000 - 0x3ffb9a20[0m
+D (692) memory_layout: Reserved memory range 0x3ffbdb28 - 0x3ffbdb5c[0m
+D (698) memory_layout: Reserved memory range 0x3ffbdb60 - 0x3ffcae28[0m
+D (705) memory_layout: Reserved memory range 0x3ffe0000 - 0x3ffe0440[0m
+D (711) memory_layout: Reserved memory range 0x3ffe3f20 - 0x3ffe4350[0m
+D (717) memory_layout: Reserved memory range 0x40070000 - 0x40078000[0m
+D (724) memory_layout: Reserved memory range 0x40078000 - 0x40080000[0m
+D (730) memory_layout: Reserved memory range 0x40080000 - 0x40098668[0m
+D (737) memory_layout: Reserved memory range 0x50001fe8 - 0x50002000[0m
+D (743) memory_layout: Building list of available memory regions:[0m
+D (749) memory_layout: Available memory region 0x3ffaff10 - 0x3ffb0000[0m
+D (756) memory_layout: Available memory region 0x3ffb6388 - 0x3ffb8000[0m
+D (762) memory_layout: Available memory region 0x3ffb9a20 - 0x3ffbdb28[0m
+D (769) memory_layout: Available memory region 0x3ffcae28 - 0x3ffcc000[0m
+D (776) memory_layout: Available memory region 0x3ffcc000 - 0x3ffce000[0m
+D (782) memory_layout: Available memory region 0x3ffce000 - 0x3ffd0000[0m
+D (789) memory_layout: Available memory region 0x3ffd0000 - 0x3ffd2000[0m
+D (795) memory_layout: Available memory region 0x3ffd2000 - 0x3ffd4000[0m
+D (802) memory_layout: Available memory region 0x3ffd4000 - 0x3ffd6000[0m
+D (809) memory_layout: Available memory region 0x3ffd6000 - 0x3ffd8000[0m
+D (815) memory_layout: Available memory region 0x3ffd8000 - 0x3ffda000[0m
+D (822) memory_layout: Available memory region 0x3ffda000 - 0x3ffdc000[0m
+D (828) memory_layout: Available memory region 0x3ffdc000 - 0x3ffde000[0m
+D (835) memory_layout: Available memory region 0x3ffde000 - 0x3ffe0000[0m
+D (842) memory_layout: Available memory region 0x3ffe0440 - 0x3ffe3f20[0m
+D (848) memory_layout: Available memory region 0x3ffe4350 - 0x3ffe8000[0m
+D (855) memory_layout: Available memory region 0x3ffe8000 - 0x3fff0000[0m
+D (861) memory_layout: Available memory region 0x3fff0000 - 0x3fff8000[0m
+D (868) memory_layout: Available memory region 0x3fff8000 - 0x3fffc000[0m
+D (875) memory_layout: Available memory region 0x3fffc000 - 0x40000000[0m
+D (881) memory_layout: Available memory region 0x40098668 - 0x4009a000[0m
+D (888) memory_layout: Available memory region 0x4009a000 - 0x4009c000[0m
+D (894) memory_layout: Available memory region 0x4009c000 - 0x4009e000[0m
+D (901) memory_layout: Available memory region 0x4009e000 - 0x400a0000[0m
+[0;32mI (908) heap_init: Initializing. RAM available for dynamic allocation:[0m
+D (915) heap_init: New heap initialised at 0x3ffaff10[0m
+[0;32mI (920) heap_init: At 3FFAFF10 len 000000F0 (0 KiB): DRAM[0m
+D (926) heap_init: New heap initialised at 0x3ffb6388[0m
+[0;32mI (931) heap_init: At 3FFB6388 len 00001C78 (7 KiB): DRAM[0m
+D (937) heap_init: New heap initialised at 0x3ffb9a20[0m
+[0;32mI (942) heap_init: At 3FFB9A20 len 00004108 (16 KiB): DRAM[0m
+D (949) heap_init: New heap initialised at 0x3ffcae28[0m
+[0;32mI (954) heap_init: At 3FFCAE28 len 000151D8 (84 KiB): DRAM[0m
+[0;32mI (960) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (966) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+D (973) heap_init: New heap initialised at 0x40098668[0m
+[0;32mI (978) heap_init: At 40098668 len 00007998 (30 KiB): IRAM[0m
+D (984) cpu_start: calling init function: 0x400d78f4 on core: 0[0m
+D (990) cpu_start: calling init function: 0x400d6d68 on core: 0[0m
+D (996) cpu_start: calling init function: 0x400d4280 on core: 0[0m
+D (1002) intr_alloc: Connected src 46 to int 1 (cpu 0)[0m
+D (1007) cpu_start: calling init function: 0x400d4290 on core: 0[0m
+D (1013) cpu_start: calling init function: 0x400d8cb4 on core: 0[0m
+D (1019) cpu_start: calling init function: 0x400dd89c on core: 0[0m
+D (1025) cpu_start: calling init function: 0x400d359c on core: 0[0m
+D (1031) cpu_start: calling init function: 0x400d6d74 on core: 0[0m
+D (1038) cpu_start: calling init function: 0x400d3cc8 on core: 0[0m
+D (1044) spi_flash: trying chip: issi[0m
+D (1047) spi_flash: trying chip: gd[0m
+D (1051) spi_flash: trying chip: mxic[0m
+D (1055) spi_flash: trying chip: winbond[0m
+D (1059) spi_flash: trying chip: generic[0m
+[0;32mI (1063) spi_flash: detected chip: generic[0m
+[0;32mI (1067) spi_flash: flash io: dio[0m
+[0;33mW (1071) spi_flash: Detected size(4096k) larger than the size in the binary image header(2048k). Using the size in the binary image header.[0m
+D (1084) cpu_start: calling init function: 0x400d37a8 on core: 0[0m
+D (1094) C++ init: Setting C++ exception emergency pool to 0.[0m
+D (1096) cpu_start: calling init function: 0x40148544 on core: 0[0m
+D (1103) intr_alloc: Connected src 17 to int 2 (cpu 0)[0m
+D (1108) cpu_start: calling init function: 0x4018f1f4 on core: 0[0m
+D (1114) cpu_start: calling init function: 0x40148d60 on core: 0[0m
+D (1120) cpu_start: calling init function: 0x400d429c on core: 0[0m
+[0;32mI (1126) coexist: coex firmware version: 093e3d2[0m
+D (1131) cpu_start: calling init function: 0x400d42b4 on core: 0[0m
+D (1138) intr_alloc: Connected src 24 to int 3 (cpu 0)[0m
+D (1143) app_start: Starting scheduler on CPU0[0m
+[0;32mI D (1147) intr_alloc: Connected src 25 to int 1 (cpu 1)[0m
+D (1152) app_start: Starting scheduler on CPU1[0m
+(1147) main_task: Started on CPU0[0m
+D (1161) heap_init: New heap initialised at 0x3ffe0440[0m
+D (1165) heap_init: New heap initialised at 0x3ffe4350[0m
+D (1171) intr_alloc: Connected src 16 to int 5 (cpu 0)[0m
+[0;32mI (1176) main_task: Calling app_main()[0m
+D (1181) gpio: GPIO[23]| InputEn: 0| OutputEn: 1| OpenDrain: 1| Pullup: 0| Pulldown: 0| Intr:0 [0m
+D (1189) gpio: GPIO[22]| InputEn: 0| OutputEn: 1| OpenDrain: 1| Pullup: 0| Pulldown: 0| Intr:0 [0m
+D (1198) gpio: GPIO[25]| InputEn: 0| OutputEn: 1| OpenDrain: 1| Pullup: 0| Pulldown: 0| Intr:0 [0m
+D (1207) gpio: GPIO[26]| InputEn: 0| OutputEn: 1| OpenDrain: 1| Pullup: 0| Pulldown: 0| Intr:0 [0m
+D (1216) gpio: GPIO[0]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+D (1224) gpio: GPIO[15]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:2 [0m
+D (1233) gpio: GPIO[4]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+D (1256) nvs: nvs_open_from_partition ps2dev2625 1[0m
+D (1257) nvs: nvs_get hasWheel 1[0m
+[0;31mE (1257) PS2Mouse: PS2Mouse::_load_internal_state_from_nvs: nvs_get_u8 failed to load hasWheel.[0m
+D (1263) nvs: nvs_get has4and5Btn 1[0m
+[0;31mE (1267) PS2Mouse: PS2Mouse::_load_internal_state_from_nvs: nvs_get_u8 failed to load has4and5Btn.[0m
+D (1277) nvs: nvs_get dataRepEn 1[0m
+[0;31mE (1280) PS2Mouse: PS2Mouse::_load_internal_state_from_nvs: nvs_get_u8 failed to load dataRepEn.[0m
+D (1289) nvs: nvs_get resolution 1[0m
+[0;31mE (1293) PS2Mouse: PS2Mouse::_load_internal_state_from_nvs: nvs_get_u8 failed to load resolution.[0m
+D (1302) nvs: nvs_get scale 1[0m
+[0;31mE (1305) PS2Mouse: PS2Mouse::_load_internal_state_from_nvs: nvs_get_u8 failed to load scale.[0m
+D (1315) nvs: nvs_get mode 1[0m
+[0;31mE (1318) PS2Mouse: PS2Mouse::_load_internal_state_from_nvs: nvs_get_u8 failed to load mode.[0m
+[0;32mI (1327) PS2Mouse: Internal state for mouse loaded from NVS[0m
+D (1737) intr_alloc: Connected src 22 to int 9 (cpu 0)[0m
+[0;32mI (1765) serial_mouse: Setup done[0m
+[0;32mI (1765) BT2PS2 Main Module: Serial mouse RTS pin level at startup: 1[0m
+D (1766) intr_alloc: Connected src -5 to int 29 (cpu 0)[0m
+[0;32mI (1771) BTDM_INIT: BT controller compile version [045a658][0m
+D (1777) BTDM_INIT: .data initialise [0x3ffae6e0] <== [0x4000d890][0m
+D (1783) BTDM_INIT: .bss initialise [0x3ffb0000] - [0x3ffb09a8][0m
+D (1789) BTDM_INIT: .bss initialise [0x3ffb09a8] - [0x3ffb1ddc][0m
+D (1795) BTDM_INIT: .bss initialise [0x3ffb1ddc] - [0x3ffb2730][0m
+D (1801) BTDM_INIT: .bss initialise [0x3ffb2730] - [0x3ffb6388][0m
+D (1807) BTDM_INIT: .bss initialise [0x3ffb8000] - [0x3ffb9a20][0m
+D (1813) BTDM_INIT: .bss initialise [0x3ffbdb28] - [0x3ffbdb5c][0m
+D (1820) efuse: BLK0 REG2 [8-15], len=8 bits[0m
+D (1823) efuse: BLK0 REG2 [0-7], len=8 bits[0m
+D (1828) efuse: BLK0 REG1 [24-31], len=8 bits[0m
+D (1832) efuse: BLK0 REG1 [16-23], len=8 bits[0m
+D (1836) efuse: BLK0 REG1 [8-15], len=8 bits[0m
+D (1841) efuse: BLK0 REG1 [0-7], len=8 bits[0m
+D (1845) efuse: BLK0 REG2 [16-23], len=8 bits[0m
+[0;32mI (1849) BTDM_INIT: Bluetooth MAC: c8:f0:9e:a4:8f:3e[0m
+[0;32mI (1860) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+D (1862) phy_init: loading PHY init data from application binary[0m
+D (1868) nvs: nvs_open_from_partition phy 0[0m
+D (1872) nvs: nvs_get cal_version 4[0m
+D (1876) nvs: nvs_get_str_or_blob cal_mac[0m
+D (1880) efuse: BLK0 REG2 [8-15], len=8 bits[0m
+D (1884) efuse: BLK0 REG2 [0-7], len=8 bits[0m
+D (1888) efuse: BLK0 REG1 [24-31], len=8 bits[0m
+D (1893) efuse: BLK0 REG1 [16-23], len=8 bits[0m
+D (1897) efuse: BLK0 REG1 [8-15], len=8 bits[0m
+D (1901) efuse: BLK0 REG1 [0-7], len=8 bits[0m
+D (1906) efuse: BLK0 REG2 [16-23], len=8 bits[0m
+D (1910) nvs: nvs_get_str_or_blob cal_data[0m
+D (1920) nvs: nvs_close 2[0m
+D (1920) efuse: BLK0 REG2 [8-15], len=8 bits[0m
+D (1921) efuse: BLK0 REG2 [0-7], len=8 bits[0m
+D (1926) efuse: BLK0 REG1 [24-31], len=8 bits[0m
+D (1930) efuse: BLK0 REG1 [16-23], len=8 bits[0m
+D (1934) efuse: BLK0 REG1 [8-15], len=8 bits[0m
+D (1939) efuse: BLK0 REG1 [0-7], len=8 bits[0m
+D (1943) efuse: BLK0 REG2 [16-23], len=8 bits[0m
+D (2491) nvs: nvs_open_from_partition bt_config.conf 1[0m
+D (2492) nvs: nvs_get_str_or_blob bt_cfg_key0[0m
+D (2493) nvs: nvs_get_str_or_blob bt_cfg_key0[0m
+D (2497) nvs: nvs_close 3[0m
+D (2498) nvs: nvs_open_from_partition bt_config.conf 1[0m
+D (2503) nvs: nvs_set_blob bt_cfg_key0 415[0m
+D (2508) nvs: nvs_close 4[0m
+D (2576) event: running task for loop 0x3ffd78f4[0m
+D (2577) event: created task for loop 0x3ffd78f4[0m
+D (2577) event: created event loop 0x3ffd78f4[0m
+D (2581) event: running post ESP_HIDH_EVENTS:5 with handler 0x400e335c and context 0x3ffdcb84 on loop 0x3ffd78f4[0m
+[0;32mI (2584) BT_keyboard setup:: Power Settings: (ADV,SCAN,DEFAULT) 7, 7, 7[0m
+[0;32mI (2599) BT2PS2 Main Module: /////////////////// PAIRING ACTIVATED ////////////////////////[0m
+[0;32mI (2607) BT2PS2 Main Module: Scanning...[0m
+[0;32mI (2613) BTKeyboard: Last bonded device: fe:44:a1:ba:f3:a2[0m
+[0;32mI (2600) BT2PS2 Main Module: Pairing requested! Stopping BLE connection daemon...[0m
+[0;32mI (11475) BTKeyboard: SCAN RESULT: fe:44:a1:b8:f5:a2 transport=BLE usage=GENERIC bonded=no rssi=-41[0m
+[0;33mW (11597) BT_HCI: hcif disc complete: hdl 0x0, rsn 0x3e dev_find 1[0m
+D (12988) BLE_HIDH: Found 1 HID Services[0m
+D (13214) nvs: nvs_open_from_partition bt_config.conf 1[0m
+D (13215) nvs: nvs_set_blob bt_cfg_key0 449[0m
+D (13221) nvs: nvs_close 5[0m
+D (13221) nvs: nvs_open_from_partition bt_config.conf 1[0m
+D (13222) nvs: nvs_set_blob bt_cfg_key0 462[0m
+D (13234) nvs: nvs_close 6[0m
+D (13235) nvs: nvs_open_from_partition bt_config.conf 1[0m
+D (13236) nvs: nvs_set_blob bt_cfg_key0 545[0m
+D (13244) nvs: nvs_close 7[0m
+D (13246) nvs: nvs_open_from_partition bt_config.conf 1[0m
+D (13246) nvs: nvs_set_blob bt_cfg_key0 600[0m
+D (13260) nvs: nvs_close 8[0m
+D (13261) nvs: nvs_open_from_partition bt_config.conf 1[0m
+D (13262) nvs: nvs_set_blob bt_cfg_key0 614[0m
+D (13268) nvs: nvs_close 9[0m
+D (14091) event: running post ESP_HIDH_EVENTS:0 with handler 0x400e335c and context 0x3ffdcb84 on loop 0x3ffd78f4[0m
+[0;33mW (14092) BTKeyboard: Couldn't get the BLE connection parameters from the device or they don't need to be updated.[0m
+D (14102) RAW REPORT MAP: : 05 01 09 02 a1 01 05 01 09 02 a1 02 85 03 09 01[0m
+D (14109) RAW REPORT MAP: : a1 00 05 09 19 01 29 05 15 00 25 01 95 05 75 01[0m
+D (14116) RAW REPORT MAP: : 81 02 95 01 75 03 81 01 05 01 09 30 09 31 95 02[0m
+D (14123) RAW REPORT MAP: : 75 10 16 01 80 26 ff 7f 81 06 a1 02 85 03 09 38[0m
+D (14130) RAW REPORT MAP: : 35 00 45 00 95 01 75 10 16 01 80 26 ff 7f 81 06[0m
+D (14137) RAW REPORT MAP: : 85 03 05 0c 0a 38 02 35 00 45 00 95 01 75 10 16[0m
+D (14144) RAW REPORT MAP: : 01 80 26 ff 7f 81 06 c0 c0 c0 c0 05 01 09 06 a1[0m
+D (14151) RAW REPORT MAP: : 01 85 01 05 07 15 00 25 01 1a e0 00 2a e7 00 75[0m
+D (14158) RAW REPORT MAP: : 01 95 08 81 02 05 07 19 00 2a 91 00 16 00 00 26[0m
+D (14165) RAW REPORT MAP: : ff 00 75 08 95 0a 81 00 c0 06 07 ff 0a 12 02 a1[0m
+D (14172) RAW REPORT MAP: : 01 85 24 09 01 75 08 95 13 15 00 26 ff 00 b1 02[0m
+D (14179) RAW REPORT MAP: : 85 27 95 13 09 02 81 02 c0 06 0b ff 0a 01 01 a1[0m
+D (14186) RAW REPORT MAP: : 01 15 00 25 ff 75 08 95 3c 85 2a 09 60 82 02 01[0m
+D (14193) RAW REPORT MAP: : 09 61 92 02 01 09 62 b2 02 01 17 00 00 00 80 27[0m
+D (14200) RAW REPORT MAP: : ff ff ff 7f 75 20 95 04 85 2c 19 66 29 69 81 02[0m
+D (14207) RAW REPORT MAP: : 85 2d 19 8a 29 8d 81 02 19 8e 29 91 91 02 c0 06[0m
+D (14214) RAW REPORT MAP: : 00 ff 0a 39 ff a1 01 85 39 75 08 95 07 09 04 81[0m
+D (14222) RAW REPORT MAP: : 02 c0 06 07 ff 0a 10 02 a1 01 85 30 15 00 25 ff[0m
+D (14229) RAW REPORT MAP: : 95 01 75 08 09 00 91 02 c0[0m
+BDA:fe:44:a1:b8:f5:a2, Appearance: 0x03c0, Connection ID: 0
+Name: Bluetooth Ergonomic Mouse, Manufacturer: Microsoft, Serial Number: 463652921611
+PID: 0x0834, VID: 0x045e, VERSION: 0x0124
+Battery: Handle: 22, CCC Handle: 23
+Report Maps: 1
+  Report Map Length: 297
+       MOUSE   INPUT   BOOT, ID:  3, Length:   3, Permissions: 0x12, Handle:  73, CCC Handle:  74
+      VENDOR FEATURE REPORT, ID: 42, Length:  60, Permissions: 0x0a, Handle:  68, CCC Handle:   0

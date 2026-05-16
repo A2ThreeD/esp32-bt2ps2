@@ -29,6 +29,7 @@
 
 #define SCAN 1
 #define SCAN_DEVICE_DUMP 0
+#define BT2PS2_MOUSE_DEBUG 0
 
 #if SCAN_DEVICE_DUMP
 #define GAP_DBG_PRINTF(...) printf(__VA_ARGS__)
@@ -78,6 +79,8 @@ uint16_t BTKeyboard::s_report_count;
 int BTKeyboard::s_usages_count;
 std::vector<uint16_t> BTKeyboard::temp_usages_array;
 std::vector<uint16_t> multimedia_keys;
+static uint32_t s_mouse_reports_parsed = 0;
+static uint32_t s_mouse_reports_dropped = 0;
 
 const char *
 BTKeyboard::ble_addr_type_str(esp_ble_addr_type_t ble_addr_type)
@@ -694,7 +697,16 @@ void BTKeyboard::handle_ble_device_result(esp_ble_gap_cb_param_t *param)
   GAP_DBG_PRINTF("\n");
 
   int numBonded = esp_ble_get_bond_device_num();
-  esp_ble_bond_dev_t *dev_list = (esp_ble_bond_dev_t *)malloc(sizeof(esp_ble_bond_dev_t) * numBonded); // bonded device information list
+  esp_ble_bond_dev_t *dev_list = NULL;
+  if (numBonded > 0)
+  {
+    dev_list = (esp_ble_bond_dev_t *)malloc(sizeof(esp_ble_bond_dev_t) * numBonded); // bonded device information list
+    if (dev_list == NULL)
+    {
+      ESP_LOGE(TAG, "malloc failed for bonded device list");
+      numBonded = 0;
+    }
+  }
 
   if (numBonded > 0)
   {
@@ -951,9 +963,18 @@ bool BTKeyboard::devices_scan(int seconds_wait_time)
   int numBonded = esp_ble_get_bond_device_num();
   ESP_LOGV(TAG, "Number of bonded devices: %d", numBonded);
 
-  esp_ble_bond_dev_t *dev_list = (esp_ble_bond_dev_t *)malloc(sizeof(esp_ble_bond_dev_t) * numBonded); // bonded device information list
+  esp_ble_bond_dev_t *dev_list = NULL;
+  if (numBonded > 0)
+  {
+    dev_list = (esp_ble_bond_dev_t *)malloc(sizeof(esp_ble_bond_dev_t) * numBonded); // bonded device information list
+    if (dev_list == NULL)
+    {
+      ESP_LOGE(TAG, "malloc failed for bonded device list");
+      numBonded = 0;
+    }
+  }
 
-  if ((esp_ble_get_bond_device_list(&numBonded, dev_list)) != ESP_OK)
+  if ((numBonded > 0) && (esp_ble_get_bond_device_list(&numBonded, dev_list) != ESP_OK))
   { // populate list
     ESP_LOGE(TAG, "esp_ble_get_bond_device_list failed");
     numBonded = 0;
@@ -968,130 +989,77 @@ bool BTKeyboard::devices_scan(int seconds_wait_time)
   esp_hid_scan(seconds_wait_time, &results_len, &results);
   ESP_LOGV(TAG, "SCAN: %u results", results_len);
 
-  // check if last bonded device is present
-
-  if (results_len && numBonded > 0)
-  {
-    ESP_LOGV(TAG, "Checking if bonded started...");
-    esp_hid_scan_result_t *r = results;
-    esp_hid_scan_result_t connectionRestore;
-    esp_hid_scan_result_t *cr = &connectionRestore;
-    esp_hid_scan_result_t *rc = NULL;
-    bool isLastBonded = false;
-
-    while (r)
-    {
-      for (int j = 0; j < numBonded; j++)
-      {
-        for (int i = 0; i < ESP_BD_ADDR_LEN; i++)
-        {
-          if (r->bda[i] == dev_list[j].bd_addr[i])
-            isLastBonded = true;
-          else
-          {
-            isLastBonded = false;
-            break;
-          }
-        }
-        if (isLastBonded)
-        {
-          ESP_LOGI(TAG, "Last bonded device present: " ESP_BD_ADDR_STR, ESP_BD_ADDR_HEX(dev_list[j].bd_addr));
-          break;
-        }
-        else
-        {
-          ESP_LOGD(TAG, "Last bonded device NOT present: " ESP_BD_ADDR_STR, ESP_BD_ADDR_HEX(dev_list[j].bd_addr));
-        }
-      }
-
-      if (isLastBonded)
-      {
-        ESP_LOGI(TAG, "Last bonded device present, adding to connect list...");
-        *cr = *r;
-        if (rc == NULL)
-          rc = cr;
-        cr = cr->next;
-        isLastBonded = false;
-      }
-
-      r = r->next;
-    }
-
-    esp_hid_scan_result_t *lc = &lastConnected;
-
-    if (rc != NULL)
-    {
-      while (rc)
-      {
-        *lc = *rc; // store device for quick-connecting later
-        if (esp_hidh_dev_open(rc->bda, rc->transport, rc->ble.addr_type) != NULL)
-        {
-          ESP_LOGI(TAG, "Connected to device: " ESP_BD_ADDR_STR, ESP_BD_ADDR_HEX(rc->bda));
-        }
-        else
-        {
-          ESP_LOGE(TAG, "esp_hih_dev_open() returned FALSE on device: " ESP_BD_ADDR_STR, ESP_BD_ADDR_HEX(rc->bda));
-        }
-        rc = rc->next;
-        lc = lc->next;
-      }
-      esp_hid_scan_results_free(results);
-      free(dev_list);
-      return true; // WARNING: devices_scan retourning true doesn't mean device connected!! check isConnected for that
-    }
-  }
-
   if (results_len)
   {
-    esp_hid_scan_result_t *r = results;
-    esp_hid_scan_result_t *cr = NULL;
-    while (r)
+    esp_hid_scan_result_t *candidate_bonded_mouse = NULL;
+    esp_hid_scan_result_t *candidate_mouse = NULL;
+    esp_hid_scan_result_t *candidate_bonded_any = NULL;
+    esp_hid_scan_result_t *candidate_any = NULL;
+
+    for (esp_hid_scan_result_t *r = results; r != NULL; r = r->next)
     {
-#if SCAN_DEVICE_DUMP
-      printf("  %s: " ESP_BD_ADDR_STR ", ", (r->transport == ESP_HID_TRANSPORT_BLE) ? "BLE" : "BT ", ESP_BD_ADDR_HEX(r->bda));
-      printf("RSSI: %d, ", r->rssi);
-      printf("USAGE: %s, ", esp_hid_usage_str(r->usage));
-      if (r->transport == ESP_HID_TRANSPORT_BLE)
+      bool is_bonded = false;
+      for (int j = 0; j < numBonded; j++)
       {
-        cr = r;
-        printf("APPEARANCE: 0x%04x, ", r->ble.appearance);
-        printf("ADDR_TYPE: '%s', ", ble_addr_type_str(r->ble.addr_type));
+        if (memcmp(r->bda, dev_list[j].bd_addr, ESP_BD_ADDR_LEN) == 0)
+        {
+          is_bonded = true;
+          break;
+        }
       }
+
+      bool is_mouse = (r->usage == ESP_HID_USAGE_MOUSE);
+
       if (r->transport == ESP_HID_TRANSPORT_BT)
       {
-        cr = r;
         btFound = true;
-        printf("COD: %s[", esp_hid_cod_major_str(r->bt.cod.major));
-        esp_hid_cod_minor_print(r->bt.cod.minor, stdout);
-        printf("] srv 0x%03x, ", r->bt.cod.service);
-        print_uuid(&r->bt.uuid);
-        printf(", ");
       }
-      printf("NAME: %s ", r->name ? r->name : "");
-      printf("\n");
-#endif
-      r = r->next;
+
+      ESP_LOGI(TAG, "SCAN RESULT: " ESP_BD_ADDR_STR " transport=%s usage=%s bonded=%s rssi=%d",
+               ESP_BD_ADDR_HEX(r->bda),
+               (r->transport == ESP_HID_TRANSPORT_BLE) ? "BLE" : "BT",
+               esp_hid_usage_str(r->usage),
+               is_bonded ? "yes" : "no",
+               r->rssi);
+
+      if (candidate_any == NULL)
+        candidate_any = r;
+      if (is_bonded && candidate_bonded_any == NULL)
+        candidate_bonded_any = r;
+      if (is_mouse && candidate_mouse == NULL)
+        candidate_mouse = r;
+      if (is_mouse && is_bonded && candidate_bonded_mouse == NULL)
+        candidate_bonded_mouse = r;
     }
-    if (cr)
+
+    esp_hid_scan_result_t *chosen = NULL;
+    if (candidate_bonded_mouse != NULL)
+      chosen = candidate_bonded_mouse;
+    else if (candidate_mouse != NULL)
+      chosen = candidate_mouse;
+    else if (candidate_bonded_any != NULL)
+      chosen = candidate_bonded_any;
+    else
+      chosen = candidate_any;
+
+    if (chosen != NULL)
     {
-      // open the last result
-      lastConnected = *cr; // store device for quick-connecting later
-      if ((esp_hidh_dev_open(cr->bda, cr->transport, cr->ble.addr_type)) != NULL)
+      lastConnected = *chosen; // store device for quick-connecting later
+      if (esp_hidh_dev_open(chosen->bda, chosen->transport, chosen->ble.addr_type) != NULL)
       {
-        ESP_LOGI(TAG, "Connected to device: " ESP_BD_ADDR_STR, ESP_BD_ADDR_HEX(cr->bda));
+        ESP_LOGI(TAG, "Chosen device to connect: " ESP_BD_ADDR_STR " transport=%s usage=%s",
+                 ESP_BD_ADDR_HEX(chosen->bda),
+                 (chosen->transport == ESP_HID_TRANSPORT_BLE) ? "BLE" : "BT",
+                 esp_hid_usage_str(chosen->usage));
         esp_hid_scan_results_free(results);
         free(dev_list);
-        return true; // WARNING: devices_scan retourning true doesn't mean device connected!! check isConnected for that
+        return true; // WARNING: devices_scan returning true doesn't mean connected yet; check isConnected
       }
-      else
-      {
-        ESP_LOGE(TAG, "esp_hidh_dev_open() failed to connect to: " ESP_BD_ADDR_STR, ESP_BD_ADDR_HEX(cr->bda));
-      }
+      ESP_LOGE(TAG, "esp_hidh_dev_open() failed on chosen device: " ESP_BD_ADDR_STR, ESP_BD_ADDR_HEX(chosen->bda));
     }
-    // free the results
+
     esp_hid_scan_results_free(results);
     free(dev_list);
-
     return false;
   }
 
@@ -1111,9 +1079,18 @@ bool BTKeyboard::devices_scan_ble_daemon(int seconds_wait_time)
   int numBonded = esp_ble_get_bond_device_num();
   ESP_LOGV(TAG, "Number of bonded devices: %d", numBonded);
 
-  esp_ble_bond_dev_t *dev_list = (esp_ble_bond_dev_t *)malloc(sizeof(esp_ble_bond_dev_t) * numBonded); // bonded device information list
+  esp_ble_bond_dev_t *dev_list = NULL;
+  if (numBonded > 0)
+  {
+    dev_list = (esp_ble_bond_dev_t *)malloc(sizeof(esp_ble_bond_dev_t) * numBonded); // bonded device information list
+    if (dev_list == NULL)
+    {
+      ESP_LOGE(TAG, "malloc failed for bonded device list");
+      numBonded = 0;
+    }
+  }
 
-  if ((esp_ble_get_bond_device_list(&numBonded, dev_list)) != ESP_OK)
+  if ((numBonded > 0) && (esp_ble_get_bond_device_list(&numBonded, dev_list) != ESP_OK))
   { // populate list
     ESP_LOGE(TAG, "esp_ble_get_bond_device_list failed");
     numBonded = 0;
@@ -1363,8 +1340,20 @@ void BTKeyboard::mouse_handle(uint8_t *report_data, std::pair<esp_hidh_dev_t *, 
   mouse.mouse_w = (int8_t)getBits(report_data, mouse_reports[*key_pair].mouse_w_bit_index, mouse_reports[*key_pair].mouse_w_bit_lenght);
   mouse.mouse_buttons = (uint8_t)getBits(report_data, mouse_reports[*key_pair].mouse_buttons_bit_index, mouse_reports[*key_pair].mouse_buttons_amount); // only a single byte for mouse buttons is supported (3 mouse buttons will be used later only)
 
-  ESP_LOGD(TAG, "Mouse passed to MAIN: B: %u X: %d Y: %d W: %d", mouse.mouse_buttons, mouse.mouse_x, mouse.mouse_y, mouse.mouse_w);
-  xQueueSend(event_queue_MOUSE, &mouse, 0);
+  s_mouse_reports_parsed++;
+  if (BT2PS2_MOUSE_DEBUG && ((s_mouse_reports_parsed % 25) == 0))
+  {
+    ESP_LOGI(TAG, "MOUSE PARSED #%lu: B=%u X=%d Y=%d W=%d", (unsigned long)s_mouse_reports_parsed, mouse.mouse_buttons, mouse.mouse_x, mouse.mouse_y, mouse.mouse_w);
+  }
+
+  if (xQueueSend(event_queue_MOUSE, &mouse, 0) != pdTRUE)
+  {
+    s_mouse_reports_dropped++;
+    if (BT2PS2_MOUSE_DEBUG)
+    {
+      ESP_LOGW(TAG, "MOUSE QUEUE FULL (drop #%lu, parsed=%lu)", (unsigned long)s_mouse_reports_dropped, (unsigned long)s_mouse_reports_parsed);
+    }
+  }
 }
 
 void BTKeyboard::push_key(uint8_t *keys, uint8_t size)
